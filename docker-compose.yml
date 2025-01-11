@@ -1,0 +1,26 @@
+services:
+  sqlserver-esri:
+    image: mcr.microsoft.com/mssql/server:2022-latest  # Use official SQL Server image
+    container_name: sqlserver-esri
+    ports:
+      - "1433:1433"  # Map SQL Server port to host
+    environment:
+      SA_PASSWORD: "Password_123#"  # Set SQL Server password
+      ACCEPT_EULA: "Y"  # Accept SQL Server license agreement,
+    healthcheck: 
+      test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P Password_123# -Q 'SELECT 1'"] 
+      interval: 10s 
+      timeout: 10s 
+      retries: 5
+  geo.api:
+    image: ${DOCKER_REGISTRY-}geoapi
+    build:
+      context: .
+      dockerfile: DemographicService.API/Dockerfile
+    ports:
+      - "5005:8080"  # Map container port 8080 to host port 5000
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver-esri;Database=GeoDb;User Id=sa;Password=Password_123#;Trusted_Connection=False;MultipleActiveResultSets=true;TrustServerCertificate=True;
+    depends_on:
+      - sqlserver-esri   
