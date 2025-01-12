@@ -16,6 +16,7 @@
 - Global exception handling
 - Healthcheck
 - Logging(serilog)
+- Resiliency (Polly)
 - Documentation(swagger)
 - Versioning
 - Telemetry support,
