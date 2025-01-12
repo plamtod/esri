@@ -51,8 +51,7 @@ namespace Demographic.Infrastructure.Servieces
 
             states = await GetStatePopulationFromDbAsync(stateNameFilter, cancellationToken); 
 
-            var serializedStates = JsonConvert.SerializeObject(states);
-            memoryCache.Set(cacheKey, serializedStates, expiration);
+            memoryCache.Set(cacheKey, states, expiration);
 
             return states;
         }
