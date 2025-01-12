@@ -3,6 +3,9 @@ using Asp.Versioning.Builder;
 using Demographic.Infrastructure;
 using DemographicService.API;
 using DemographicService.API.Extensions;
+using HealthChecks.UI.Client;
+using HealthChecks.UI.Configuration;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Polly;
@@ -28,11 +31,12 @@ builder.Services.AddApiVersioning(options =>
     options.GroupNameFormat = "'v'V";
     options.SubstituteApiVersionInUrl = true;
 });
-//builder.Services.ConfigureOptions<ConfigureSwaggerGenOptions>();
+
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration).CreateLogger();
 builder.Host.UseSerilog();
+
 builder.Services.RegisterInfrastructure(builder.Configuration);
 
 builder.Services.AddEndpoints(typeof(Program).Assembly);
@@ -40,6 +44,18 @@ builder.Services.AddHttpClient();
 builder.Services.AddHostedService<PeriodicHostedService>();
 
 var app = builder.Build();
+
+//HealthCheck Middleware
+app.MapHealthChecks("/api/health", new HealthCheckOptions()
+{
+    Predicate = _ => true,
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
+app.UseHealthChecksUI(delegate (Options options)
+{
+    options.UIPath = "/healthcheck-ui";
+});
+
 // Redirect root URL to Swagger
 app.Use(async (context, next) =>
 {
@@ -59,6 +75,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+//Versioning
 ApiVersionSet apiVersionSet = app.NewApiVersionSet()
     .HasApiVersion(new ApiVersion(1))
     .ReportApiVersions()
@@ -93,9 +111,6 @@ retryPolicy.ExecuteAsync(async () =>
         logger.LogError(ex, "An error occurred while seeding the database.");
     }
 }).Wait();
-
-
-
 
 app.Run();
 

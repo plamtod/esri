@@ -19,14 +19,13 @@ public class PeriodicHostedService(ILogger<PeriodicHostedService> logger,
                 var populationService = scope.ServiceProvider.GetRequiredService<IPopulationService>();
                 var statePopulation = await GetPopulationDataAsync(geoService, cancellationToken);
                 //save in database - upsert
-                //await populationService.SaveStatePopulationsAsync(statePopulation);
+                await populationService.SaveStatePopulationsAsync(statePopulation, cancellationToken);
 
             }
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Exception in hosted service happend");
-            
         }
         
     }
@@ -37,10 +36,7 @@ public class PeriodicHostedService(ILogger<PeriodicHostedService> logger,
        
         return await GetRetryPolicy().ExecuteAsync(async () =>
         {
-            logger.LogInformation("Successfully called the ESRI endpoint.");
             return await geoService.GetPopulationsAsync(client);
-           
-            
         });
     }
 

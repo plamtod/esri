@@ -48,8 +48,6 @@ namespace DemographicService.API
                         ["traceId"] = activity?.Id,
                         ["requestId"] = httpContext.TraceIdentifier
                     }
-
-
                 }
             };
 

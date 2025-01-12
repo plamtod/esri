@@ -9,13 +9,13 @@ namespace Demographic.Infrastructure.Servieces.Contracts
         /// </summary>
         /// <param name="locations"></param>
         /// <returns></returns>
-        Task SaveStatePopulationsAsync(Dictionary<string, int> locations);
+        Task SaveStatePopulationsAsync(Dictionary<string, int> locations, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Get state population
         /// </summary>
         /// <param name="stateNameFilter"></param>
         /// <returns></returns>
-        Task<List<Population>> GetStatePopulationAsync(string? stateNameFilter = null);
+        Task<List<Population>> GetStatePopulationAsync(string? stateNameFilter = null, CancellationToken cancellationToken = default);
     }
 }

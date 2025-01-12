@@ -8,10 +8,10 @@ namespace DemographicService.API.Endpoints
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("/population", async (IPopulationService populationService, string? stateName = null) =>
+            app.MapGet("/population", async (IPopulationService populationService, string? stateName = null, CancellationToken cancellationToken = default) =>
             {
-                var population = await populationService.GetStatePopulationAsync(stateName);
-                return Results.Ok(population.Select(PopulationResponse.FromPopulation).ToList());
+                var populations = await populationService.GetStatePopulationAsync(stateName, cancellationToken);
+                return Results.Ok(populations.Select(PopulationResponse.FromPopulation).ToList());
             })
             .MapToApiVersion(1)
             .Produces<List<PopulationResponse>>(StatusCodes.Status200OK)

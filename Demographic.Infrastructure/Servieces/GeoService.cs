@@ -1,25 +1,27 @@
 ﻿using Demographic.Domain.Models;
 using Demographic.Infrastructure.Servieces.Contracts;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace Demographic.Infrastructure.Servieces
 {
-    internal sealed class GeoService(ILogger<GeoService> logger): IGeoService
+    internal sealed class GeoService(IConfiguration configuration, ILogger<GeoService> logger): IGeoService
     {
 
         public async Task<Dictionary<string, int>> GetPopulationsAsync(HttpClient client)
         {
+            int recordCount = configuration.GetValue<int>("GeoService:recordCount");
+            string baseUrl = configuration.GetValue<string>("GeoService:url")!;
             Dictionary<string, int> statesPopulation = [];
             GeoResponse response;
-            int recordCount = 100;
 
             try
             {
                 int i = 0;
                 do
                 {
-                    var url = $"https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/USA_Census_Counties/FeatureServer/0/query?where=1%3D1&outFields=population%2C+state_name&returnGeometry=false&f=json&&resultRecordCount&resultOffset={i * recordCount}&resultRecordCount={recordCount}";
+                    var url = string.Format(baseUrl, (i * recordCount), recordCount);
                     var httpResponse = await client.GetAsync(url);
                     httpResponse.EnsureSuccessStatusCode();
                     string responseContent = await httpResponse.Content.ReadAsStringAsync();

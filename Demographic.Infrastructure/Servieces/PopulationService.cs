@@ -8,12 +8,12 @@ using Newtonsoft.Json;
 
 namespace Demographic.Infrastructure.Servieces
 {
-    internal sealed class PopulationService(PopulationContext context, IMemoryCache memoryCache, ILogger<PopulationService> logger) : IPopulationService
+    public class PopulationService(PopulationContext context, IMemoryCache memoryCache, ILogger<PopulationService> logger) : IPopulationService
     {
-        public async Task SaveStatePopulationsAsync(Dictionary<string, int> locations)
+        public async Task SaveStatePopulationsAsync(Dictionary<string, int> locations, CancellationToken cancellationToken = default)
         {
             //cache in memory
-            var populations = await context.Populations.ToListAsync();
+            var populations = await context.Populations.ToListAsync(cancellationToken);
 
             // Convert to list of named tuples
             var statesPopulations = locations.Select(kvp => (Name: kvp.Key, Count: kvp.Value)).ToList();
@@ -36,28 +36,28 @@ namespace Demographic.Infrastructure.Servieces
                 }
             }
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(cancellationToken);
         }
 
         private readonly TimeSpan expiration = TimeSpan.FromMinutes(3);
-        public async Task<List<Population>> GetStatePopulationAsync(string? stateNameFilter = null)
+        public async Task<List<Population>> GetStatePopulationAsync(string ? stateNameFilter = null, CancellationToken cancellationToken = default)
         {
             var cacheKey = $"States_{stateNameFilter??"all"}"; 
             
-            if(memoryCache.TryGetValue(cacheKey, out List<Population> states))
+            if (memoryCache.TryGetValue(cacheKey, out List<Population> states))
             {
                 return states; 
             }
 
-            states = await GetStatePopulationFromDbAsync(stateNameFilter); 
+            states = await GetStatePopulationFromDbAsync(stateNameFilter, cancellationToken); 
 
             var serializedStates = JsonConvert.SerializeObject(states);
-            memoryCache.Set(cacheKey, serializedStates, expiration);
+            var t= memoryCache.Set(cacheKey, serializedStates, expiration);
 
             return states;
         }
 
-        private async Task<List<Population>> GetStatePopulationFromDbAsync(string? stateNameFilter = null)
+        private async Task<List<Population>> GetStatePopulationFromDbAsync(string? stateNameFilter = null, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -68,7 +68,7 @@ namespace Demographic.Infrastructure.Servieces
                     query = query.Where(x => EF.Functions.Like(x.StateName, $"%{stateNameFilter}%"));
                 }
 
-                return await query.ToListAsync();
+                return await query.ToListAsync(cancellationToken);
             }
             catch (Exception ex)
             {

@@ -8,11 +8,11 @@
         {
             Errors = errors;
         }
-    }
 
-    public record ValidationError()
-    {
-        public string PropertyName { get; init; } = string.Empty;
-        public string ErrorMessage { get; init; } = string.Empty;
+        public record ValidationError()
+        {
+            public string PropertyName { get; init; } = string.Empty;
+            public string ErrorMessage { get; init; } = string.Empty;
+        }
     }
 }
