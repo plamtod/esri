@@ -26,7 +26,7 @@
 Стартирането на проекта е по два начина.
 
 Вариант 1
-Стартиране на следната команда от цоманден ред, която да създаде db контейнер:
+Стартиране на следната команда от команден ред, която да създаде db контейнер:
 
 docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=Password_123#" -p 1433:1433 --name sql_server_container -d mcr.microsoft.com/mssql/server
 от директорията DemographicService.API се стартира dotnet run
